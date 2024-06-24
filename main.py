@@ -1,74 +1,48 @@
-from kivy.lang import Builder
-
-from kivymd.uix.screen import MDScreen
-from kivymd.app import MDApp
-
-# Your layouts.
-Builder.load_string(
-    '''
-#:import os os
-#:import Window kivy.core.window.Window
-#:import IconLeftWidget kivymd.uix.list.IconLeftWidget
-#:import images_path kivymd.images_path
+from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.textinput import TextInput
 
 
-<ItemBackdropFrontLayer@TwoLineAvatarListItem>
-    icon: "android"
-
-    IconLeftWidget:
-        icon: root.icon
-
-
-<MyBackdropFrontLayer@ItemBackdropFrontLayer>
-    backdrop: None
-    text: "Lower the front layer"
-    secondary_text: " by 50 %"
-    icon: "transfer-down"
-    on_press: root.backdrop.open(-Window.height / 2)
-    pos_hint: {"top": 1}
-    _no_ripple_effect: True
-
-
-<MyBackdropBackLayer@Image>
-    size_hint: .8, .8
-    source: os.path.join(images_path, "logo", "kivymd-icon-512.png")
-    pos_hint: {"center_x": .5, "center_y": .6}
-'''
-)
-
-# Usage example of MDBackdrop.
-Builder.load_string(
-    '''
-<ExampleBackdrop>
-
-    MDBackdrop:
-        id: backdrop
-        left_action_items: [['menu', lambda x: self.open()]]
-        title: "Example Backdrop"
-        radius_left: "25dp"
-        radius_right: "0dp"
-        header_text: "Menu:"
-
-        MDBackdropBackLayer:
-            MyBackdropBackLayer:
-                id: backlayer
-
-        MDBackdropFrontLayer:
-            MyBackdropFrontLayer:
-                backdrop: backdrop
-'''
-)
-
-
-class ExampleBackdrop(MDScreen):
-    pass
-
-
-class Example(MDApp):
+class MainApp(App):
     def build(self):
-        self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Orange"
-        return ExampleBackdrop()
+        main_layout = BoxLayout(orientation="vertical", padding=10, spacing=10)
+        self.solution = TextInput(multiline=False, readonly=False, halign="right", font_size=55)
+        main_layout.add_widget(self.solution)
+        buttons = [
+            ["7", "8", "9", "/"],
+            ["4", "5", "6", "*"],
+            ["1", "2", "3", "-"],
+            [".", "0", "C", "+"],
+        ]
+        for row in buttons:
+            h_layout = BoxLayout()
+            for label in row:
+                button = Button(text=label, pos_hint={"center_x": 0.5, "center_y": 0.5})
+                button.bind(on_press=self.on_button_press)
+                h_layout.add_widget(button)
+            main_layout.add_widget(h_layout)
+
+        equals_button = Button(text="=", pos_hint={"center_x": 0.5, "center_y": 0.5})
+        equals_button.bind(on_press=self.on_solution)
+        main_layout.add_widget(equals_button)
+
+        # return a Button() as a root widget
+        return main_layout
+
+    def on_button_press(self, instance):
+        if instance.text == "C":
+            self.solution.text = ""
+        else:
+            self.solution.text += instance.text
+
+    def on_solution(self, instance):
+        if self.solution.text:
+            try:
+                self.solution.text = str(eval(self.solution.text))
+            except:
+                self.solution.text = "Error"
 
 
-Example().run()
+if __name__ == '__main__':
+    MainApp().run()
